@@ -262,6 +262,7 @@ pub struct StreamConfig {
     pub channels: ChannelCount,
     pub sample_rate: SampleRate,
     pub buffer_size: BufferSize,
+    pub low_latency: bool,
 }
 
 /// Describes the minimum and maximum supported buffer size for the device
@@ -409,6 +410,7 @@ impl SupportedStreamConfig {
             channels: self.channels,
             sample_rate: self.sample_rate,
             buffer_size: BufferSize::Default,
+            low_latency: true,
         }
     }
 }

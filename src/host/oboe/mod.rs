@@ -6,6 +6,8 @@ use std::vec::IntoIter as VecIntoIter;
 
 extern crate oboe;
 
+use oboe::PerformanceMode;
+
 use crate::traits::{DeviceTrait, HostTrait, StreamTrait};
 use crate::{
     BackendSpecificError, BufferSize, BuildStreamError, Data, DefaultStreamConfigError,
@@ -213,6 +215,9 @@ fn configure_for_device<D, C, I>(
         builder
     };
     builder = builder.set_sample_rate(config.sample_rate.0.try_into().unwrap());
+    if config.low_latency {
+        builder = builder.set_performance_mode(PerformanceMode::LowLatency);
+    }
     match &config.buffer_size {
         BufferSize::Default => builder,
         BufferSize::Fixed(size) => builder.set_buffer_capacity_in_frames(*size as i32),

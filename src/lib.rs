@@ -165,6 +165,7 @@ extern crate js_sys;
 extern crate web_sys;
 
 pub use error::*;
+use oboe::{AudioApi, AudioDeviceInfo, AudioFeature};
 pub use platform::{
     available_hosts, default_host, host_from_id, Device, Devices, Host, HostId, Stream,
     SupportedInputConfigs, SupportedOutputConfigs, ALL_HOSTS,
@@ -701,6 +702,7 @@ impl SupportedStreamConfigRange {
     ///
     /// **Sample rate**:
     ///
+    /// - 48000 (allegedly native sampling rate of most of devices)
     /// - 44100 (cd quality)
     /// - Max sample rate
     pub fn cmp_default_heuristics(&self, other: &Self) -> std::cmp::Ordering {
@@ -737,6 +739,15 @@ impl SupportedStreamConfigRange {
             return cmp_u16;
         }
 
+        const HZ_48000: SampleRate = SampleRate(48_000);
+        let r48000_in_self = self.min_sample_rate <= HZ_48000 && HZ_48000 <= self.max_sample_rate;
+        let r48000_in_other =
+            other.min_sample_rate <= HZ_48000 && HZ_48000 <= other.max_sample_rate;
+        let cmp_r48000 = r48000_in_self.cmp(&r48000_in_other);
+        if cmp_r48000 != Equal {
+            return cmp_r48000;
+        }
+
         const HZ_44100: SampleRate = SampleRate(44_100);
         let r44100_in_self = self.min_sample_rate <= HZ_44100 && HZ_44100 <= self.max_sample_rate;
         let r44100_in_other =
@@ -744,6 +755,7 @@ impl SupportedStreamConfigRange {
         let cmp_r44100 = r44100_in_self.cmp(&r44100_in_other);
         if cmp_r44100 != Equal {
             return cmp_r44100;
+
         }
 
         self.max_sample_rate.cmp(&other.max_sample_rate)

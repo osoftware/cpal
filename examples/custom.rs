@@ -186,6 +186,10 @@ impl StreamTrait for MyStream {
         self.controls.pause.store(true, Ordering::Relaxed);
         Ok(())
     }
+
+    fn frames_per_burst(&self) -> i32 {
+        64
+    }
 }
 
 // streams are expected to stop when dropped

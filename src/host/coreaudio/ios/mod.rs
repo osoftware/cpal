@@ -276,6 +276,15 @@ impl StreamTrait for Stream {
         }
         Ok(())
     }
+    
+    fn frames_per_burst(&self) -> i32 {
+        if let Ok(stream) = self.inner.lock() {
+            if let Ok(frames) = stream.audio_unit.get_property::<u32>(kAudioDevicePropertyBufferFrameSize, Scope::Input, Element::Input) {
+                return frames as i32
+            }
+        }
+        256
+    }
 }
 
 struct StreamInner {

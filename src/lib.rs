@@ -860,6 +860,72 @@ impl SupportedStreamConfigRange {
 
         self.max_sample_rate.cmp(&other.max_sample_rate)
     }
+    
+    pub fn cmp_default_heuristics_native(&self, other: &Self, native_sample_rate: i32) -> std::cmp::Ordering {
+        use std::cmp::Ordering::Equal;
+        use SampleFormat::{F32, I16, I24, I32, U16, U24, U32};
+
+        let cmp_stereo = (self.channels == 2).cmp(&(other.channels == 2));
+        if cmp_stereo != Equal {
+            return cmp_stereo;
+        }
+
+        let cmp_mono = (self.channels == 1).cmp(&(other.channels == 1));
+        if cmp_mono != Equal {
+            return cmp_mono;
+        }
+
+        let cmp_channels = self.channels.cmp(&other.channels);
+        if cmp_channels != Equal {
+            return cmp_channels;
+        }
+
+        let cmp_f32 = (self.sample_format == F32).cmp(&(other.sample_format == F32));
+        if cmp_f32 != Equal {
+            return cmp_f32;
+        }
+
+        let cmp_i32 = (self.sample_format == I32).cmp(&(other.sample_format == I32));
+        if cmp_i32 != Equal {
+            return cmp_i32;
+        }
+
+        let cmp_u32 = (self.sample_format == U32).cmp(&(other.sample_format == U32));
+        if cmp_u32 != Equal {
+            return cmp_u32;
+        }
+
+        let cmp_i24 = (self.sample_format == I24).cmp(&(other.sample_format == I24));
+        if cmp_i24 != Equal {
+            return cmp_i24;
+        }
+
+        let cmp_u24 = (self.sample_format == U24).cmp(&(other.sample_format == U24));
+        if cmp_u24 != Equal {
+            return cmp_u24;
+        }
+
+        let cmp_i16 = (self.sample_format == I16).cmp(&(other.sample_format == I16));
+        if cmp_i16 != Equal {
+            return cmp_i16;
+        }
+
+        let cmp_u16 = (self.sample_format == U16).cmp(&(other.sample_format == U16));
+        if cmp_u16 != Equal {
+            return cmp_u16;
+        }
+
+        let sr = SampleRate(native_sample_rate as u32);
+        let sr_in_self = self.min_sample_rate <= sr && sr <= self.max_sample_rate;
+        let sr_in_other =
+            other.min_sample_rate <= sr && sr <= other.max_sample_rate;
+        let cmp_sr = sr_in_self.cmp(&sr_in_other);
+        if cmp_sr != Equal {
+            return cmp_sr;
+        }
+
+        self.max_sample_rate.cmp(&other.max_sample_rate)
+    }
 }
 
 #[test]

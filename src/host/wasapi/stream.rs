@@ -199,6 +199,9 @@ impl StreamTrait for Stream {
             .map_err(|_| crate::error::PauseStreamError::DeviceNotAvailable)?;
         Ok(())
     }
+    fn frames_per_burst(&self) -> i32 {
+        128
+    }
 }
 
 impl Drop for StreamInner {

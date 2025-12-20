@@ -13,11 +13,18 @@ impl AudioManager {
         with_attached(context, |env, context| get_frames_per_buffer(env, &context))
             .map_err(|error| error.to_string())
     }
+
+    pub fn get_native_sample_rate() -> Result<i32, String> {
+        let context = get_context();
+
+        with_attached(context, |env, context| get_native_sample_rate(env, &context))
+            .map_err(|error| error.to_string())
+    }
 }
 
 fn get_frames_per_buffer<'j>(env: &mut JNIEnv<'j>, context: &JObject<'j>) -> JResult<i32> {
     let audio_manager = get_system_service(env, context, Context::AUDIO_SERVICE)?;
-
+    
     let frames_per_buffer = get_property(
         env,
         &audio_manager,
@@ -29,5 +36,20 @@ fn get_frames_per_buffer<'j>(env: &mut JNIEnv<'j>, context: &JObject<'j>) -> JRe
     // TODO: Use jni::errors::Error::ParseFailed instead of jni::errors::Error::JniCall once jni > v0.21.1 is released
     frames_per_buffer_string
         .parse::<i32>()
-        .map_err(|e| jni::errors::Error::JniCall(jni::errors::JniError::Unknown))
+        .map_err(|_| jni::errors::Error::JniCall(jni::errors::JniError::Unknown))
+}
+
+fn get_native_sample_rate<'j>(env: &mut JNIEnv<'j>, context: &JObject<'j>) -> JResult<i32> {
+    let audio_manager = get_system_service(env, context, Context::AUDIO_SERVICE)?;
+
+    let sample_rate = get_property(
+        env,
+        &audio_manager,
+        AudioManager::PROPERTY_OUTPUT_SAMPLE_RATE,
+    )?;
+
+    let sample_rate_string = String::from(env.get_string(&sample_rate)?);
+    sample_rate_string
+        .parse::<i32>()
+        .map_err(|_| jni::errors::Error::JniCall(jni::errors::JniError::Unknown))
 }

@@ -514,6 +514,17 @@ macro_rules! impl_platform_host {
                         }
                     )*
                 }
+            }            
+            
+            fn frames_per_burst(&self) -> i32 {
+                match self.0 {
+                    $(
+                        $(#[cfg($feat)])?
+                        StreamInner::$HostVariant(ref s) => {
+                            s.frames_per_burst()
+                        }
+                    )*
+                }
             }
         }
 

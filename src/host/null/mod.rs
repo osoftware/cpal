@@ -141,6 +141,10 @@ impl StreamTrait for Stream {
     fn pause(&self) -> Result<(), PauseStreamError> {
         unimplemented!()
     }
+
+    fn frames_per_burst(&self) -> i32 {
+        unimplemented!()
+    }
 }
 
 impl Iterator for Devices {

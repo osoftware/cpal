@@ -349,7 +349,9 @@ impl DeviceTrait for Device {
 
     fn default_input_config(&self) -> Result<SupportedStreamConfig, DefaultStreamConfigError> {
         let mut configs: Vec<_> = self.supported_input_configs().unwrap().collect();
-        configs.sort_by(|a, b| b.cmp_default_heuristics(a));
+        let native_sample_rate = AudioManager::get_native_sample_rate()
+            .map_err(|e| DefaultStreamConfigError::BackendSpecific { err: BackendSpecificError { description: e } })?;
+        configs.sort_by(|a, b| b.cmp_default_heuristics_native(a, native_sample_rate));
         let config = configs
             .into_iter()
             .next()
@@ -360,7 +362,9 @@ impl DeviceTrait for Device {
 
     fn default_output_config(&self) -> Result<SupportedStreamConfig, DefaultStreamConfigError> {
         let mut configs: Vec<_> = self.supported_output_configs().unwrap().collect();
-        configs.sort_by(|a, b| b.cmp_default_heuristics(a));
+        let native_sample_rate = AudioManager::get_native_sample_rate()
+            .map_err(|e| DefaultStreamConfigError::BackendSpecific { err: BackendSpecificError { description: e } })?;
+        configs.sort_by(|a, b| b.cmp_default_heuristics_native(a, native_sample_rate));
         let config = configs
             .into_iter()
             .next()
@@ -409,6 +413,8 @@ impl DeviceTrait for Device {
         let builder = ndk::audio::AudioStreamBuilder::new()?
             .direction(ndk::audio::AudioDirection::Input)
             .channel_count(channel_count)
+            .performance_mode(ndk::audio::AudioPerformanceMode::LowLatency)
+            .sharing_mode(ndk::audio::AudioSharingMode::Exclusive)
             .format(format);
 
         build_input_stream(
@@ -461,6 +467,8 @@ impl DeviceTrait for Device {
         let builder = ndk::audio::AudioStreamBuilder::new()?
             .direction(ndk::audio::AudioDirection::Output)
             .channel_count(channel_count)
+            .performance_mode(ndk::audio::AudioPerformanceMode::LowLatency)
+            .sharing_mode(ndk::audio::AudioSharingMode::Exclusive)
             .format(format);
 
         build_output_stream(
@@ -501,6 +509,13 @@ impl StreamTrait for Stream {
                 .unwrap()
                 .request_pause()
                 .map_err(PauseStreamError::from),
+        }
+    }
+
+    fn frames_per_burst(&self) -> i32 {
+        match self {
+            Self::Input(stream) => stream.lock().unwrap().frames_per_burst(),
+            Self::Output(stream) => stream.lock().unwrap().frames_per_burst(),
         }
     }
 }

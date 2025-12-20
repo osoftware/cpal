@@ -137,6 +137,7 @@ ndk-context = "0.1"
 jni = "0.21"
 num-derive = "0.4"
 num-traits = "0.2"
+log = "0.4.28"
 
 [[example]]
 name = "beep"

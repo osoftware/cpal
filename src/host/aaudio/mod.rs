@@ -493,7 +493,7 @@ impl StreamTrait for Stream {
 
         stream.request_start().map_err(PlayStreamError::from)?;
         stream
-            .wait_for_state_change(ndk::audio::AudioStreamState::Starting, 300_000_000)
+            .wait_for_state_change(ndk::audio::AudioStreamState::Starting, 2_000_000_000)
             .map(|_| ())
             .map_err(PlayStreamError::from)
     }
